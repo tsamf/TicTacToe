@@ -8,108 +8,130 @@
 
 
 //prototypes
-void gotoxy(int column, int row);
-void display_board(int board[3][3]);
-int game_state(int board[3][3]);
-bool turn(int board[3][3], int player);
-bool make_move(int board[3][3], int move,int player);
-COORD translate_move(int move);
-void clear_board(int board[3][3]);
+void PlayGame();
+void SetCursorPosition(int Column, int Row);
+void DisplayGameBoard(int Board[3][3]);
+void PrintGrid();
+int ReturnGameState(int Board[3][3]);
+bool TakeTurn(int Board[3][3], int Player);
+bool MakeMove(int Board[3][3], int Move,int Player);
+COORD TranslateMove(int Move);
+void ClearBoard(int Board[3][3]);
+void RefreshUserInterface(int Board[3][3]);
+
 
 int main()
 {
+	PlayGame();
+
+	return 0;
+}
+
+void PlayGame()
+{
 	//Possible states returned by game_state()
-	enum state{in_progress,player_one_wins,player_two_wins,draw};
-	
-	
+	enum State { in_progress, player_one_wins, player_two_wins, draw };
+
+
 	//Tic Tac Toe board
-	int board[3][3] =
+	int Board[3][3] =
 	{
 		{ 0,0,0 },
 		{ 0,0,0 },
 		{ 0,0,0 }
 	};
 
-	
-	bool playing = true;
+
+	bool Playing = true;
+
+	PrintGrid();
 
 	//Tic Tac Toe repeats until told to exit
-	while (playing)
+	while (Playing)
 	{
-
 		//Players take turns
-		while (game_state(board) == state::in_progress)
+		while (ReturnGameState(Board) == State::in_progress)
 		{
 			//Player one's turn loops until valid input is given
-			while (!turn(board, 1));
+			while (!TakeTurn(Board, 1))
+			{
+				RefreshUserInterface(Board);
+			};
+
+			//Update Board to refelct player Ones Move
+			RefreshUserInterface(Board);
 
 			//If player one wins break the loop here
-			if (game_state(board) != state::in_progress)
+			if (ReturnGameState(Board) != State::in_progress)
 				break;
-			
+
 			//Player two's turn loops until valid input is given
-			while (!turn(board, 2));
+			while (!TakeTurn(Board, 2))
+			{
+				RefreshUserInterface(Board);
+			};
+
+			RefreshUserInterface(Board);
 		}
 
 		//Clear the window, display board, and the end of game condition.
-		system("cls");
-		display_board(board);
-		int s = game_state(board);
+		//DisplayGameBoard(Board);
+		
+		RefreshUserInterface(Board);
+		
+		
+
+		int s = ReturnGameState(Board);
+
 
 		switch (s)
 		{
-		case state::in_progress:
+		case State::in_progress:
 			std::cout << "You shouldn't be here!" << std::endl;
 			break;
-		case state::player_one_wins:
+		case State::player_one_wins:
 			std::cout << "Player 1 Wins!" << std::endl;
 			break;
-		case state::player_two_wins:
+		case State::player_two_wins:
 			std::cout << "Player 2 Wins!" << std::endl;
 			break;
-		case state::draw:
+		case State::draw:
 			std::cout << "The game is a draw!" << std::endl;
 			break;
 		}
-		
+
 		//Do the players want to play again?
 		char play = 'Y';
-		std::cout << "Do you want to play again Y/N"<<std::endl;
+		std::cout << "Do you want to play again Y/N" << std::endl;
 		std::cin >> play;
 
 		//if yes clear the board and start the game over
 		if (play == 'Y' || play == 'y')
 		{
-			playing = true;
-			clear_board(board);
-			
+			Playing = true;
+			ClearBoard(Board);
+			RefreshUserInterface(Board);
+
 		}
 		else
 		{
-			playing = false;
+			Playing = false;
 		}
 	}
-
-	return 0;
 }
 
 //Sends the console cursor to an (x,y) coordinate
-void gotoxy(int row, int column)
+void SetCursorPosition(int Row, int Column)
 {
 	COORD coord;
-	coord.X = column;
-	coord.Y = row;
+	coord.X = Column;
+	coord.Y = Row;
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
-//Displays the board and the current moves
-void display_board(int board[3][3])
+//Print the grid
+void PrintGrid()
 {
-	//How big a move is on the display 
-	int move_size = 3;
-	//Offsets the game board when it prints by 1
-	int grid_offset = 1;
-
 	//Define game grid
 	char grid[12][12] =
 	{
@@ -127,21 +149,7 @@ void display_board(int board[3][3])
 		{ ' ',' ',' ',' ','|',' ',' ',' ','|',' ',' ',' ' },
 	};
 
-	//Define x move
-	char x[3][3] =
-	{
-		{ 'X', ' ', 'X' },
-		{ ' ','X',' ' },
-		{ 'X', ' ', 'X' }
-	};
-	
-	//Define o move
-	char y[3][3] =
-	{
-		{ 'O', 'O', 'O' },
-		{ 'O', ' ', 'O' },
-		{ 'O', 'O', 'O' }
-	};
+
 
 	//Print grid
 	for (int r = 0; r < 12; r++)
@@ -152,6 +160,32 @@ void display_board(int board[3][3])
 		}
 		std::cout << std::endl;
 	}
+}
+
+
+//Displays the board and the current moves
+void DisplayGameBoard(int Board[3][3])
+{
+	//How big a move is on the display 
+	int MoveSize = 3;
+	//Offsets the game board when it prints by 1
+	int GridOffset = 1;
+
+	//Define x move
+	char XMove[3][3] =
+	{
+		{ 'X', ' ', 'X' },
+		{ ' ','X',' ' },
+		{ 'X', ' ', 'X' }
+	};
+
+	//Define o move
+	char YMove[3][3] =
+	{
+		{ 'O', 'O', 'O' },
+		{ 'O', ' ', 'O' },
+		{ 'O', 'O', 'O' }
+	};
 
 	//Print moves
 	for (int r = 0; r < 3; r++)
@@ -159,34 +193,34 @@ void display_board(int board[3][3])
 		for (int c = 0; c < 3; c++)
 		{
 			//Calculate Coordinate for move
-			COORD coord;
-			coord.X = r* move_size + grid_offset + r;
-			coord.Y = c* move_size + grid_offset + c;
+			COORD Coord;
+			Coord.X = r* MoveSize + GridOffset + r;
+			Coord.Y = c* MoveSize + GridOffset + c;
 
 			//Set cursor to coordinate
-			gotoxy(coord.X, coord.Y);
+			SetCursorPosition(Coord.X, Coord.Y);
 
 			//If the move is an X print an X in the space
-			if (board[r][c] == 1)
+			if (Board[r][c] == 1)
 			{
 				for (int i = 0; i < 3; i++)
 				{
-					gotoxy(coord.X + i, coord.Y);
+					SetCursorPosition(Coord.X + i, Coord.Y);
 					for (int j = 0; j < 3; j++)
 					{
-						std::cout << x[i][j];
+						std::cout << XMove[i][j];
 					}
 				}
 			}
 			//If the move is an O print an O in the space
-			else if (board[r][c] == 2)
+			else if (Board[r][c] == 2)
 			{
 				for (int i = 0; i < 3; i++)
 				{
-					gotoxy(coord.X + i, coord.Y);
+					SetCursorPosition(Coord.X + i, Coord.Y);
 					for (int j = 0; j < 3; j++)
 					{
-						std::cout << y[i][j];
+						std::cout << YMove[i][j];
 					}
 				}
 			}
@@ -194,54 +228,61 @@ void display_board(int board[3][3])
 	}
 
 	//Set cursor to line after the board
-	gotoxy(13, 0);
+	SetCursorPosition(13, 0);
+}
+
+void RefreshUserInterface(int Board[3][3])
+{
+	system("cls");
+	PrintGrid();
+	DisplayGameBoard(Board);
 }
 
 //Updates game state based on current moves 
-int game_state(int board[3][3])
+int ReturnGameState(int Board[3][3])
 {
 	for (int r = 0; r < 3; r++)
 	{
 		//Check for horizontal win
-		if (board[r][0] == board[r][1] && board[r][0] == board[r][2] && board[r][0] != 0)
+		if (Board[r][0] == Board[r][1] && Board[r][0] == Board[r][2] && Board[r][0] != 0)
 		{
-			return board[r][0];
+			return Board[r][0];
 		}
 		//Check for vertical win
-		else if (board[0][r] == board[1][r] && board[0][r] == board[2][r] && board[0][r] != 0)
+		else if (Board[0][r] == Board[1][r] && Board[0][r] == Board[2][r] && Board[0][r] != 0)
 		{
-			return board[0][r];
+			return Board[0][r];
 		}
 	}
 
 
 	//check for diagonal win
-	if (board[0][0] == board[1][1] && board[0][0] == board[2][2] && board[0][0] != 0)
+	if (Board[0][0] == Board[1][1] && Board[0][0] == Board[2][2] && Board[0][0] != 0)
 	{
-		return board[0][0];
+		return Board[0][0];
 	}
 
-	if (board[0][2] == board[1][1] && board[0][2] == board[2][0] && board[0][2] != 0)
+	if (Board[0][2] == Board[1][1] && Board[0][2] == Board[2][0] && Board[0][2] != 0)
 	{
-		return board[0][2];
+		return Board[0][2];
 	}
 
 
 	//check for a full board
-	int blanks = 0;
+	int Blanks = 0;
 	for (int r = 0; r < 3; r++)
 	{
 		for (int c = 0; c < 3; c++)
 		{
-			if (board[r][c] == 0)
+			if (Board[r][c] == 0)
 			{
-				blanks++;
+				Blanks++;
 			}
 		}
 	}
 
 	//Full board return 3
-	if (blanks == 0)
+	if (Blanks == 0)
 	{
 		return 3;
 	}
@@ -251,83 +292,81 @@ int game_state(int board[3][3])
 }
 
 //Players move
-bool make_move(int board[3][3], int move,int player)
+bool MakeMove(int Board[3][3], int Move,int Player)
 {
-	COORD t_move = translate_move(move);
+	COORD TranslatedMove = TranslateMove(Move);
 
 	//Checks for valid moves if the input is taken or out of range it returns a false value
-	if (board[t_move.X][t_move.Y] != 0 || t_move.X == -1)
+	if (Board[TranslatedMove.X][TranslatedMove.Y] != 0 || TranslatedMove.X == -1)
 	{
 		return false;
 	}
 	else
 	{
 		//Valid move is recorded and true is returned 
-		board[t_move.X][t_move.Y] = player;
+		Board[TranslatedMove.X][TranslatedMove.Y] = Player;
 		return true;
 	}
 
 }
 
 //Translate players move choice into array position
-COORD translate_move(int move)
+COORD TranslateMove(int Move)
 {
-	COORD result;
+	COORD Result;
 
-	switch (move)
+	switch (Move)
 	{
 	case 1:
-		result.X = 0;
-		result.Y = 0;
+		Result.X = 0;
+		Result.Y = 0;
 		break;
 	case 2:
-		result.X = 0;
-		result.Y = 1;
+		Result.X = 0;
+		Result.Y = 1;
 		break;
 	case 3:
-		result.X = 0;
-		result.Y = 2;
+		Result.X = 0;
+		Result.Y = 2;
 		break;
 	case 4:
-		result.X = 1;
-		result.Y = 0;
+		Result.X = 1;
+		Result.Y = 0;
 		break;
 	case 5:
-		result.X = 1;
-		result.Y = 1;
+		Result.X = 1;
+		Result.Y = 1;
 		break;
 	case 6:
-		result.X = 1;
-		result.Y = 2;
+		Result.X = 1;
+		Result.Y = 2;
 		break;
 	case 7:
-		result.X = 2;
-		result.Y = 0;
+		Result.X = 2;
+		Result.Y = 0;
 		break;
 	case 8:
-		result.X = 2;
-		result.Y = 1;
+		Result.X = 2;
+		Result.Y = 1;
 		break;
 	case 9:
-		result.X = 2;
-		result.Y = 2;
+		Result.X = 2;
+		Result.Y = 2;
 		break;
 	default:
-		result.X = -1;
-		result.Y = -1;
+		Result.X = -1;
+		Result.Y = -1;
 	}
 
-	return result;
+	return Result;
 }
 
 //Player Turn
-bool turn(int board[3][3], int player)
+bool TakeTurn(int Board[3][3], int Player)
 {
-	system("cls");
-	display_board(board);
-	std::cout << "Make a move player "<< player << "!" << std::endl;
-	int move = 0;
-	std::cin >> move;
+	std::cout << "Make a move player "<< Player << "!" << std::endl;
+	int Move = 0;
+	std::cin >> Move;
 	
 	//If we get a bad input return false
 	if (std::cin.fail()) {
@@ -338,21 +377,22 @@ bool turn(int board[3][3], int player)
 		//Start turn over
 		return false;
 	}
-
+	
 	//Make the move and return true if successful
-	return make_move(board, move, player);
+	return MakeMove(Board, Move, Player);
 }
 
 //Clears the board of all moves
-void clear_board(int board[3][3])
+void ClearBoard(int Board[3][3])
 {
 	for (int r = 0; r < 3; r++)
 	{
 		for (int c = 0; c < 3; c++)
 		{
-			board[r][c] = 0;
+			Board[r][c] = 0;
 		}
 	}
 }
 
 
+ 
