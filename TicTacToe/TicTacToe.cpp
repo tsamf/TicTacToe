@@ -19,7 +19,7 @@ void PlayGame()
 	//Possible states returned by game_state()
 	enum State { in_progress, player_one_wins, player_two_wins, draw };
 
-	TicTacToeBoard board;
+	TicTacToeBoard board(5);
 
 	bool Playing = true;
 
@@ -54,14 +54,9 @@ void PlayGame()
 		}
 
 		//Clear the window, display board, and the end of game condition.
-		//DisplayGameBoard(Board);
-		
 		board.RefreshUserInterface();
-		
-		
 
 		int s = board.ReturnBoardState();
-
 
 		switch (s)
 		{
@@ -98,8 +93,3 @@ void PlayGame()
 		}
 	}
 }
-
-
-
-
- 
